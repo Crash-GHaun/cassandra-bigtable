@@ -1,16 +1,13 @@
-# cassandra-bigtable
-Cassandra to Google Bigtable Migration Whitepaper
+# Migrating from Apache Cassandra to Google Cloud Bigtable
 
-Running simulation to insert rows into cassandra:
+This repository provides support for whitepaper on how to migrate your database from Apache Cassandra (following as “Cassandra”) to Google Cloud Bigtable (following as “Cloud Bigtable”. It describes a migration process that not only moves your database to Cloud Bigtable but also lets you take full advantage of Cloud Bigtable unique capabilities, as well as best practices for ensuring a smooth transition with minimal service impact.
 
-1) Make sure locust is installed in your environment.
-2) Run simlulation process using command:
-   <br><i>locust -f src/simulation.py</i>
-3) Open browser at: http://127.0.0.1:8089/
-4) Start simulation by choosing 
-   <br>Number of users to simulate = number of servers to simulate. 
-   <br> Hatch rate = 0 to spawn all
-  'servers' imediately.
-   <br> and press <i>start</i> 
-5) Test data is being inserted by using the following sql from cqlsh
-    <br><i>select count(*) from case_ks.metrics;</i>
+However, due to the nature of this whitepaper and very large variety of possible applications using Apache Cassandra, this document doesn’t cover all possible use-cases and it cannot be used as step-by-step migration guide.
+
+**Included Tools**
+
+The collection of tools to support migration from Apache Cassandra to Google Cloud Bigtable:
+
+ - Apache Beam pipeline running on Google Cloud Dataflow for bulk loading of data
+ - Demo Application
+
