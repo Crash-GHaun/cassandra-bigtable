@@ -1,5 +1,5 @@
 cassandra-driver
-locust
 google-cloud-bigtable
 google-cloud-core
+locust
 

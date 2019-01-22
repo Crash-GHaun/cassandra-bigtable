@@ -7,8 +7,10 @@ class ServerBehavior(TaskSet):
 
     @task
     def sample(self):
-        metric.insert_row_cassandra(metric.create_row(id(self)))
-        print('id {}'.format(id(self)))
+        row = metric.create_metric(id(self))
+#        metric.insert_row_cassandra(row)
+        metric.insert_row_bigtable(row)
+        print('----->id= {}'.format(id(self)))
 
 
 class Server(Locust):
