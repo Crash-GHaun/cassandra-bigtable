@@ -4,8 +4,6 @@ from cassandra.cluster import Cluster
 from google.cloud import bigtable
 
 import argparse
-import datetime
-import ipaddress
 import random
 import threading
 import time
@@ -13,8 +11,7 @@ import time
 
 def emit_metrics(server, cass_session, bt_table, column_family_id):
     count = 0
-    #while True:
-    for _ in range(1, 2):
+    while True:
         count += 1
         metric = metric_api.create_metric(server)
         metric_api.insert_row_cassandra(metric, cass_session)
