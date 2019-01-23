@@ -1,4 +1,4 @@
-from dl import metric as metric_api
+from dl import metric as metric_dl
 
 from cassandra.cluster import Cluster
 from google.cloud import bigtable
@@ -9,13 +9,13 @@ import threading
 import time
 
 
-def emit_metrics(server, cass_session, bt_table, column_family_id):
+def emit_metrics(server, cass_session, bt_table):
     count = 0
     while True:
         count += 1
-        metric = metric_api.create_metric(server)
-        metric_api.insert_row_cassandra(metric, cass_session)
-        metric_api.insert_row_bigtable(metric, bt_table, column_family_id)
+        metric = metric_dl.create_metric(server)
+        metric_dl.insert_row_cassandra(metric, cass_session)
+        metric_dl.insert_row_bigtable(metric, bt_table)
         print('Server {} emitted total {} metric'.format(server, count))
         time.sleep(random.randrange(5, 9))
 
@@ -46,14 +46,6 @@ if __name__ == "__main__":
         '--bt_instance_id',
         help='Bigtable instance id',
         required=True)
-    parser.add_argument(
-        '--bt_table',
-        help='Bigtable table name',
-        required=True)
-    parser.add_argument(
-        '--bt_column_family',
-        help='Bigtable column family',
-        required=True)
 
     args = parser.parse_args()
 
@@ -63,14 +55,13 @@ if __name__ == "__main__":
     # Bigtable connection
     bt_client = bigtable.Client(project=args.bt_project_id, admin=True)
     bt_instance = bt_client.instance(args.bt_instance_id)
-    bt_table = bt_instance.table(args.bt_table)
-    column_family_id = args.bt_column_family
+    bt_table = bt_instance.table(metric_dl.TABLE_NAME)
 
     num_of_servers = args.servers
 
     servers = [random.randrange(0, 2**32) for _ in range(num_of_servers)]
     print('=bringing up servers {}'.format(servers))
     for server in servers:
-        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_table, column_family_id))
+        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_table))
         thread.start()
 

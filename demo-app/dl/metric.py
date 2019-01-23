@@ -2,6 +2,13 @@ import datetime
 import ipaddress
 import random
 
+TABLE_NAME = 'metrics'
+COLUMN_FAMILY = 'metric'
+CQL = """
+INSERT INTO {} (server_ip, sample_time, cpu_usage, cpu_load, mem_usage, processes)
+VALUES (%(server_ip)s, %(sample_time)s, %(cpu_usage)s, %(cpu_load)s, %(mem_usage)s, %(processes)s)
+""".format(TABLE_NAME)
+
 
 def create_metric(server_id):
     metric = dict(server_ip=ipaddress.IPv4Address(server_id % 2**32),  # mock ip address
@@ -14,22 +21,16 @@ def create_metric(server_id):
 
 
 def insert_row_cassandra(metric, cass_session):
-    cass_session.execute(
-        """
-        INSERT INTO metrics (server_ip, sample_time, cpu_usage, cpu_load, mem_usage, processes)
-        VALUES (%(server_ip)s, %(sample_time)s, %(cpu_usage)s, %(cpu_load)s, %(mem_usage)s, %(processes)s)
-        """,
-        metric
-    )
+    cass_session.execute(CQL, metric)
 
 
-def insert_row_bigtable(metric, bt_table, column_family_id):
+def insert_row_bigtable(metric, bt_table):
     row_key = '{server}@{ts}'.format(server=metric['server_ip'],
                                      ts=str(int(metric['sample_time'].timestamp() * 1e6)))
 
     row = bt_table.row(row_key)
     for column, value in metric.items():
-        row.set_cell(column_family_id,
+        row.set_cell(COLUMN_FAMILY,
                      column,
                      str(value).encode(),
                      timestamp=datetime.datetime.utcnow())
