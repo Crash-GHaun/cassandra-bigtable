@@ -14,9 +14,9 @@ def emit_metrics(server, cass_session, bt_session, bt_omit):
     while True:
         count += 1
         metric = metric_dl.Metric(server)
-        cass_session.insert_row_cassandra(metric)
+        cass_session.insert_row(metric)
         if not bt_omit:
-            bt_session.insert_row_bigtable(metric)
+            bt_session.insert_row(metric)
         print('Server {} emitted total {} metric'.format(server, count))
         time.sleep(random.randrange(5, 9))
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     if args.bt_omit:
         bt_session = None
     else:
-        bt_session = metric_dl.BigtableMetric(args.bt_project_id, args.bt_instance_id, )
+        bt_session = metric_dl.BigtableMetric(args.bt_project_id, args.bt_instance_id)
 
     num_of_servers = args.servers
 
