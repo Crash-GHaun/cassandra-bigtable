@@ -1,3 +1,6 @@
+from cassandra.cluster import Cluster
+from google.cloud import bigtable
+
 import datetime
 import ipaddress
 import random
@@ -19,20 +22,32 @@ class Metric:
         self.mem_usage = random.randrange(0, 4 * 1024)
         self.processes = random.randrange(0, 1001)
 
-    def insert_row_cassandra(self, cass_session):
-        cass_session.execute(CQL, self.__dict__)
 
-    def insert_row_bigtable(self, bt_table):
-        row_key = '{server}@{ts}'.format(server=self.server_ip,
-                                         ts=str(int(self.sample_time.timestamp() * 1e6)))
+class CassandraMetric:
+    def __init__(self, host, db):
+        cluster = Cluster([host])
+        self.session = cluster.connect(db)
 
-        row = bt_table.row(row_key)
+    def insert_row_cassandra(self, metric):
+        self.session.execute(CQL, metric.__dict__)
+
+
+class BigtableMetric:
+    def __init__(self, project_id, instance_id):
+        bt_client = bigtable.Client(project=project_id, admin=True)
+        self.bt_instance = bt_client.instance(instance_id)
+        self.bt_table = self.bt_instance.table(TABLE_NAME)
+
+    def insert_row_bigtable(self, metric):
+        row_key = '{server}@{ts}'.format(server=metric.server_ip,
+                                         ts=str(int(metric.sample_time.timestamp() * 1e6)))
+
+        row = self.bt_table.row(row_key)
         for column, value in self.__dict__.items():
             row.set_cell(COLUMN_FAMILY,
-                        column,
-                        str(value).encode(),
-                        timestamp=datetime.datetime.utcnow())
-
+                         column,
+                         str(value).encode(),
+                         timestamp=datetime.datetime.utcnow())
         #bt_table.mutate_rows([row])
         row.commit()
 

@@ -9,14 +9,14 @@ import threading
 import time
 
 
-def emit_metrics(server, cass_session, bt_table, bt_omit):
+def emit_metrics(server, cass_session, bt_session, bt_omit):
     count = 0
     while True:
         count += 1
         metric = metric_dl.Metric(server)
-        metric.insert_row_cassandra(cass_session)
+        cass_session.insert_row_cassandra(metric)
         if not bt_omit:
-            metric.insert_row_bigtable(bt_table)
+            bt_session.insert_row_bigtable(metric)
         print('Server {} emitted total {} metric'.format(server, count))
         time.sleep(random.randrange(5, 9))
 
@@ -56,13 +56,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cassandra connection
-    cass_cluster = Cluster([args.cassandra_host])
-    cass_session = cass_cluster.connect(args.cassandra_db)
+    cass_session = metric_dl.CassandraMetric(args.cassandra_host, args.cassandra_db)
+
     # Bigtable connection
-    bt_table = None
+    bt_session = None
     if args.bt_omit:
-        bt_table = None
+        bt_session = None
     else:
+        bt_session = metric_dl.BigtableMetric(args.bt_project_id, args.bt_instance_id, )
         bt_client = bigtable.Client(project=args.bt_project_id, admin=True)
         bt_instance = bt_client.instance(args.bt_instance_id)
         bt_table = bt_instance.table(metric_dl.TABLE_NAME)
@@ -72,6 +73,6 @@ if __name__ == "__main__":
     servers = [random.randrange(0, 2**32) for _ in range(num_of_servers)]
     print('=bringing up servers {}'.format(servers))
     for server in servers:
-        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_table, args.bt_omit))
+        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_session, args.bt_omit))
         thread.start()
 
