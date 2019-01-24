@@ -14,4 +14,4 @@ PRIMARY KEY ((server_ip), sample_time) )
 WITH CLUSTERING ORDER BY (sample_time DESC);
 
 
-CREATE INDEX met_by_ts ON case_ks.metrics (sample_time);
+--CREATE INDEX met_by_ts ON case_ks.metrics (sample_time);

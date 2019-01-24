@@ -9,13 +9,14 @@ import threading
 import time
 
 
-def emit_metrics(server, cass_session, bt_table):
+def emit_metrics(server, cass_session, bt_table, bt_omit):
     count = 0
     while True:
         count += 1
-        metric = metric_dl.create_metric(server)
-        metric_dl.insert_row_cassandra(metric, cass_session)
-        metric_dl.insert_row_bigtable(metric, bt_table)
+        metric = metric_dl.Metric(server)
+        metric.insert_row_cassandra(cass_session)
+        if not bt_omit:
+            metric.insert_row_bigtable(bt_table)
         print('Server {} emitted total {} metric'.format(server, count))
         time.sleep(random.randrange(5, 9))
 
@@ -46,6 +47,11 @@ if __name__ == "__main__":
         '--bt_instance_id',
         help='Bigtable instance id',
         required=True)
+    parser.add_argument(
+        '--bt_omit',
+        help='Insert to bigtable',
+        action='store_true',
+        default=False)
 
     args = parser.parse_args()
 
@@ -53,15 +59,19 @@ if __name__ == "__main__":
     cass_cluster = Cluster([args.cassandra_host])
     cass_session = cass_cluster.connect(args.cassandra_db)
     # Bigtable connection
-    bt_client = bigtable.Client(project=args.bt_project_id, admin=True)
-    bt_instance = bt_client.instance(args.bt_instance_id)
-    bt_table = bt_instance.table(metric_dl.TABLE_NAME)
+    bt_table = None
+    if args.bt_omit:
+        bt_table = None
+    else:
+        bt_client = bigtable.Client(project=args.bt_project_id, admin=True)
+        bt_instance = bt_client.instance(args.bt_instance_id)
+        bt_table = bt_instance.table(metric_dl.TABLE_NAME)
 
     num_of_servers = args.servers
 
     servers = [random.randrange(0, 2**32) for _ in range(num_of_servers)]
     print('=bringing up servers {}'.format(servers))
     for server in servers:
-        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_table))
+        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_table, args.bt_omit))
         thread.start()
 
