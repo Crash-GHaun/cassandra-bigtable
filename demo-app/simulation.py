@@ -64,9 +64,6 @@ if __name__ == "__main__":
         bt_session = None
     else:
         bt_session = metric_dl.BigtableMetric(args.bt_project_id, args.bt_instance_id, )
-        bt_client = bigtable.Client(project=args.bt_project_id, admin=True)
-        bt_instance = bt_client.instance(args.bt_instance_id)
-        bt_table = bt_instance.table(metric_dl.TABLE_NAME)
 
     num_of_servers = args.servers
 
