@@ -63,7 +63,7 @@ class BigtableMetric:
                                          ts=str(int(metric.sample_time.timestamp() * 1e6)))
 
         row = self.bt_table.row(row_key)
-        for column, value in self.__dict__.items():
+        for column, value in metric.__dict__.items():
             row.set_cell(COLUMN_FAMILY,
                          column,
                          str(value).encode(),
