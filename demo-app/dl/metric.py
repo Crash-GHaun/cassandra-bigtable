@@ -50,7 +50,7 @@ class CassandraMetric:
                 # In case of Time out exception or if some mishappening occurs
                 # Retry after 500 milliseconds
                 time.sleep(.5)
-                print("Exception occurred while fetching page, retrying again with same page")
+                print("Exception occurred while fetching page from Cassandra, retrying again with same page")
                 continue
         count += len(rs.current_rows)
         return count
@@ -75,12 +75,17 @@ class BigtableMetric:
         try:
             row.commit()
         except Exception:
-            print('Exception occurred while inserting row into Cassandra')
+            print('Exception occurred while inserting row into Bigtable')
             raise
-            
+
     def full_table_scan(self):
         count = 0
-        partial_rows = self.bt_table.read_rows()
+        try:
+            partial_rows = self.bt_table.read_rows()
+        except Exception:
+            print("Exception occurred while fetching rows from Bigtable")
+            raise
+
         for row in partial_rows:
             row_data = {key.decode(): row.cells[COLUMN_FAMILY][key][len(row.cells[COLUMN_FAMILY][key]) - 1].
                         value.decode() for key in row.cells[COLUMN_FAMILY]}
