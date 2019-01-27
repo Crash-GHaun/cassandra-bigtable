@@ -1,6 +1,8 @@
 # Demo App
 Running simulation to insert rows into Cassandra and Bigtable:
 
+First install dependencies
+``` pip install -r requirements.txt```
 ```
 python simulation.py --servers=<number of servers to simulate>
 --cassandra_host=<host ip> 
