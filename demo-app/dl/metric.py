@@ -46,10 +46,10 @@ class CassandraMetric:
                 count += len(rows)
                 # Try fetching next page
                 rs.fetch_next_page()
-            except:
+            except Exception:
                 # In case of Time out exception or if some mishappening occurs
-                # Retry after 500 milliseconds
-                time.sleep(.5)
+                # Retry after 1 second
+                time.sleep(1)
                 print("Exception occurred while fetching page from Cassandra, retrying again with same page")
                 continue
         count += len(rs.current_rows)

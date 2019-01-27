@@ -1,8 +1,5 @@
 from dl import metric as metric_dl
 
-from cassandra.cluster import Cluster
-from google.cloud import bigtable
-
 import argparse
 import random
 import threading
@@ -68,7 +65,7 @@ if __name__ == "__main__":
     num_of_servers = args.servers
 
     servers = [random.randrange(0, 2**32) for _ in range(num_of_servers)]
-    print('=bringing up servers {}'.format(servers))
+    print('bringing up {} servers...'.format(servers))
     for server in servers:
         thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_session, args.bt_omit))
         thread.start()
