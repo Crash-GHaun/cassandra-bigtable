@@ -30,7 +30,11 @@ class CassandraMetric:
         self.session = cluster.connect(db)
 
     def insert_row(self, metric):
-        self.session.execute(CQL, metric.__dict__)
+        try:
+            self.session.execute(CQL, metric.__dict__)
+        except Exception:
+            print('Exception occurred while inserting row into Cassandra')
+            raise
 
     def full_table_scan(self):
         query = "SELECT * FROM {}".format(TABLE_NAME)
@@ -46,7 +50,7 @@ class CassandraMetric:
                 # In case of Time out exception or if some mishappening occurs
                 # Retry after 500 milliseconds
                 time.sleep(.5)
-                print("Exception Occurred while fetching page, retrying again with same page")
+                print("Exception occurred while fetching page, retrying again with same page")
                 continue
         count += len(rs.current_rows)
         return count
@@ -68,8 +72,20 @@ class BigtableMetric:
                          column,
                          str(value).encode(),
                          timestamp=datetime.datetime.utcnow())
+        try:
+            row.commit()
+        except Exception:
+            print('Exception occurred while inserting row into Cassandra')
+            raise
+            
+    def full_table_scan(self):
+        count = 0
+        partial_rows = self.bt_table.read_rows()
+        for row in partial_rows:
+            row_data = {key.decode(): row.cells[COLUMN_FAMILY][key][len(row.cells[COLUMN_FAMILY][key]) - 1].
+                        value.decode() for key in row.cells[COLUMN_FAMILY]}
 
-        #bt_table.mutate_rows([row])
-        row.commit()
+            count += 1
+        return count
 
 
