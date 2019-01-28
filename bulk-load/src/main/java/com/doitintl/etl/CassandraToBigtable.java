@@ -1,10 +1,9 @@
 package com.doitintl.etl;
 
-import com.doitintl.etl.pojos.Tweet;
+import com.doitintl.etl.pojos.Metric;
 import com.google.cloud.bigtable.beam.CloudBigtableIO;
 import com.google.cloud.bigtable.beam.CloudBigtableTableConfiguration;
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.coders.SerializableCoder;
 import org.apache.beam.sdk.io.cassandra.CassandraIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -22,7 +21,7 @@ import java.util.Arrays;
  * schema.
  */
 public class CassandraToBigtable {
-	private static final byte[] FAMILY = Bytes.toBytes("cf1");
+	private static final byte[] FAMILY = Bytes.toBytes("metric");
 
 	/**
 	 * Runs a pipeline to import Cassandra table to a Cloud Bigtable table.
@@ -35,13 +34,15 @@ public class CassandraToBigtable {
 				.withValidation()
 				.as(CassandraToBigtableOptions.class);
 
-		PipelineResult result = runPipeline(options);
+		Pipeline pipeline = buildPipeline(options);
+
+		pipeline.run();
 	}
 
-	private static PipelineResult runPipeline(CassandraToBigtableOptions options){
+	private static Pipeline buildPipeline(CassandraToBigtableOptions options){
 		Pipeline pipeline = Pipeline.create(options);
 
-		CloudBigtableTableConfiguration peopleConfig =
+		CloudBigtableTableConfiguration case_ksTable =
 				new CloudBigtableTableConfiguration.Builder()
 						.withProjectId(options.getBigtableProjectId())
 						.withInstanceId(options.getBigtableInstanceId())
@@ -51,41 +52,37 @@ public class CassandraToBigtable {
 		pipeline
 				.apply("Read from Cassandra",
 						CassandraIO
-								.<Tweet>read()
+								.<Metric>read()
 								.withHosts(Arrays.asList(options.getCassandraHostsList()))
 								.withPort(options.getCassandraPort())
 								.withKeyspace(options.getCassandraKeyspace())
 								.withTable(options.getCassandraTable())
-								.withEntity(Tweet.class)
-								.withCoder(SerializableCoder.of(Tweet.class))
+								.withEntity(Metric.class)
+								.withCoder(SerializableCoder.of(Metric.class))
 				)
-				.apply("Transform to Bigtable",
+				.apply("Transform to Bigtable row",
 						MapElements
 								.via(new CassandraTweetsByDateToBigTableFn()))
-				.apply("Write to Bigtable",
+				.apply("Write row to Bigtable",
 						CloudBigtableIO
-								.writeToTable(peopleConfig))
+								.writeToTable(case_ksTable))
 				;
 
-		return pipeline.run();
+		return pipeline;
 	}
 
-	static class CassandraTweetsByDateToBigTableFn extends SimpleFunction<Tweet, Mutation>{
+	static class CassandraTweetsByDateToBigTableFn extends SimpleFunction<Metric, Mutation>{
 		private static final long serialVersionUID = -654811021949199644L;
 
 		@Override
-		public Mutation apply(Tweet row){
-			Mutation mutation = new Put(Bytes.toBytes(row.getId()));
+		public Mutation apply(Metric row){
+			Mutation mutation = new Put(Bytes.toBytes(row.getServer_ip()));
 
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("user_id"), Bytes.toBytes(row.getUserId()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("created_at"), Bytes.toBytes(row.getCreatedAt().getNanos()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("tweet_text"), Bytes.toBytes(row.getTweetText()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("hashtag_entities"), Bytes.toBytes(row.getHashtagEntities()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("url_entities"), Bytes.toBytes(row.getUrlEntities()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("favorites_count"), Bytes.toBytes(row.getFavoritesCount()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("retweet_count"), Bytes.toBytes(row.getRetweetCount()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("quoted_status_id"), Bytes.toBytes(row.getQuotedStatusId()));
-			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("in_reply_to_status_id"), Bytes.toBytes(row.getInReplyToStatusId()));
+            ((Put) mutation).addColumn(FAMILY, Bytes.toBytes("sample_time"), Bytes.toBytes(row.getSample_time().toString()));
+			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("cpu_usage"), Bytes.toBytes(row.getCpu_usage().toString()));
+			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("cpu_load"), Bytes.toBytes(row.getCpu_load().toString()));
+			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("mem_usage"), Bytes.toBytes(row.getMem_usage().toString()));
+			((Put) mutation).addColumn(FAMILY, Bytes.toBytes("processes"), Bytes.toBytes(row.getProcesses().toString()));
 
 			return mutation;
 		}

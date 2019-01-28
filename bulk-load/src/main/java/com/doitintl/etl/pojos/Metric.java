@@ -1,12 +1,13 @@
 package com.doitintl.etl.pojos;
 
+import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**CREATE TABLE case_ks.metrics (
         server_ip text,
@@ -19,15 +20,17 @@ import java.sql.Timestamp;
         WITH CLUSTERING ORDER BY (sample_time DESC);
  */
 
-@Table(keyspace = "case_ks", name = "metrics")
+@Table(name = "metrics")
 @Data
 public class Metric implements Serializable {
-    @PartitionKey
+	private static final long serialVersionUID = -4539019641852859948L;
+	@PartitionKey
     @Column(name = "server_ip")
     String server_ip;
 
+    @ClusteringColumn
     @Column(name = "sample_time")
-    Timestamp sample_time;
+    Date sample_time;
 
     @Column(name = "cpu_usage")
     Float cpu_usage;
