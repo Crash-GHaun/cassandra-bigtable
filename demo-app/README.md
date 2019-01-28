@@ -1,7 +1,7 @@
 # Demo App
 Running simulation to insert rows into Cassandra and Bigtable:
 
-##Steps to run simulation
+## Steps to run simulation
 (1) Make sure you use `python 3.6` or `3.7` and install dependencies. 
 preferably use a dedicated virtualenv.  
 
