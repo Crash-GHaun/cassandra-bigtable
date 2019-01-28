@@ -1,5 +1,6 @@
 from cassandra.cluster import Cluster
 from google.cloud import bigtable
+from google.cloud.bigtable import column_family
 
 import datetime
 import ipaddress
@@ -51,14 +52,18 @@ class CassandraMetric:
         self.setup()
 
     def setup(self):
-        print("Creating keyspace if not exists already...")
-        self.session.execute(CQL_CREATE_KEYSPACE)
+        try:
+            print("Creating Cassandra keyspace if not exists already...")
+            self.session.execute(CQL_CREATE_KEYSPACE)
 
-        print("Setting keyspace...")
-        self.session.set_keyspace(KEYSPACE)
+            print("Setting Cassandra keyspace...")
+            self.session.set_keyspace(KEYSPACE)
 
-        print("Creating metrics table if not exists...")
-        self.session.execute(CQL_CREATE_TABLE)
+            print("Creating Cassandra metrics table if not exists...")
+            self.session.execute(CQL_CREATE_TABLE)
+        except Exception:
+            print('Error in setting up Cassandra environment')
+            raise
 
     def insert_row(self, metric):
         try:
@@ -89,9 +94,23 @@ class CassandraMetric:
 
 class BigtableMetric:
     def __init__(self, project_id, instance_id):
-        bt_client = bigtable.Client(project=project_id, admin=True)
-        self.bt_instance = bt_client.instance(instance_id)
-        self.bt_table = self.bt_instance.table(TABLE_NAME)
+            bt_client = bigtable.Client(project=project_id, admin=True)
+            self.bt_instance = bt_client.instance(instance_id)
+            self.bt_table = self.bt_instance.table(TABLE_NAME)
+            self.setup()
+
+    def setup(self):
+        try:
+            print('Creating Bigtable column family with Max Version GC rule...')
+            max_versions_rule = column_family.MaxVersionsGCRule(2)
+            column_family_id = COLUMN_FAMILY
+            column_families = {column_family_id: max_versions_rule}
+            print("Creating Bigtable metrics table if not exists...")
+            if not self.bt_table.exists():
+                self.bt_table.create(column_families=column_families)
+        except Exception:
+            print('Exception occurred while inserting row into Cassandra')
+            raise
 
     def insert_row(self, metric):
         row_key = '{server}@{ts}'.format(server=metric.server_ip,

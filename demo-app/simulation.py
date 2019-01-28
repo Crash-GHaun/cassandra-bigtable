@@ -6,13 +6,13 @@ import threading
 import time
 
 
-def emit_metrics(server, cass_session, bt_session, bt_omit):
+def emit_metrics(server, cass_session, bt_session, skip_bt_insert):
     count = 0
     while True:
         count += 1
         metric = metric_dl.Metric(server)
         cass_session.insert_row(metric)
-        if not bt_omit:
+        if not skip_bt_insert:
             bt_session.insert_row(metric)
         print('Server {} emitted total {} metric'.format(server, count))
         time.sleep(random.randrange(5, 9))
@@ -41,8 +41,8 @@ if __name__ == "__main__":
         help='Bigtable instance id',
         required=True)
     parser.add_argument(
-        '--bt_omit',
-        help='Insert to bigtable',
+        '--skip_bt_insert',
+        help='Skip inserting data to bigtable',
         action='store_true',
         default=False)
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # Bigtable connection
     bt_session = None
-    if args.bt_omit:
+    if args.skip_bt_insert:
         bt_session = None
     else:
         bt_session = metric_dl.BigtableMetric(args.bt_project_id, args.bt_instance_id)
@@ -63,6 +63,6 @@ if __name__ == "__main__":
     servers = [random.randrange(0, 2**32) for _ in range(num_of_servers)]
     print('bringing up {} servers...'.format(servers))
     for server in servers:
-        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_session, args.bt_omit))
+        thread = threading.Thread(target=emit_metrics, args=(server, cass_session, bt_session, args.skip_bt_insert))
         thread.start()
 

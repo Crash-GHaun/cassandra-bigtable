@@ -38,27 +38,24 @@ This code was tested using a [Bitnami solution available on Google marketplace](
   The code uses the default authentication to connect to Bigtable.  
   see https://googleapis.github.io/google-cloud-python/latest/core/auth.html  
 
-(6) Create a bigtable *metrics* table and *metric* column family using cbt.   
-  see: ```demo_app/scripts/cbt/create_metrics_table.sh```  
-
-
-(7) Run the simulation using the followinf command. If you want to stream data to bigtable remove ```--bt_omit```
+(6) Run the simulation using the followinG command. If you want to stream data to bigtable remove ```--skip_bt_insert```
 ``` 
 python simulation.py --servers=<number of servers to simulate>
 --cassandra_host=<host ip> 
 --bt_project_id=<google project id>
 --bt_instance_id=<bigtable instance id>
---bt-omit
+--skip_bt_insert
 ```
 
-The simulation will create the ```metric``` keyspace in Cassandra if it does not exists already
-and create the ```metrics``` table on that keyspace if it does not exists already.
+The simulation will create the ```metric``` keyspace in Cassandra 
+and the ```metrics``` table on that keyspace if they do not exists already.  
+If omitting ```--skip_bt_insert``` it will also create the ```metrics``` table on Bigtable instance id provided
 
-(8) Test data is being inserted to cassandra by using the following sql from cqlsh:
+(7) Test data is being inserted to cassandra by using the following sql from cqlsh:
 
  ```select count(*) from metric.metrics;```  
  
-(9) Test data is being inserted to Bigtable by using the following cbt command
+(8) Test data is being inserted to Bigtable by using the following cbt command
 
  ```cbt count metrics```
  
