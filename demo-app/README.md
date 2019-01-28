@@ -34,34 +34,37 @@ This code was tested using a [Bitnami solution available on Google marketplace](
  If you use the marketplace solution linked above add a firewall rule
  from https://console.cloud.google.com/networking/firewalls
  
-(5) Create keyspace in Cassandra or use an existing one and create 
-  the *metrics* table under it. You can use cqlsh to run the commsands in:  
-```demo_app/scripts/cql/create_metrics_table.cql```
-
-(6) Make sure you have bigtable instance up and running on your GCP project.  
+(5) Make sure you have bigtable instance up and running on your GCP project.  
   The code uses the default authentication to connect to Bigtable.  
   see https://googleapis.github.io/google-cloud-python/latest/core/auth.html  
 
-(7) Create a bigtable *metrics* table and *metric* column family using cbt.   
+(6) Create a bigtable *metrics* table and *metric* column family using cbt.   
   see: ```demo_app/scripts/cbt/create_metrics_table.sh```  
 
 
-(8) Run the simulation using the followinf command. If you want to stream data to bigtable remove ```--bt_omit```
+(7) Run the simulation using the followinf command. If you want to stream data to bigtable remove ```--bt_omit```
 ``` 
 python simulation.py --servers=<number of servers to simulate>
 --cassandra_host=<host ip> 
---cassandra_db=<keyspace>
 --bt_project_id=<google project id>
 --bt_instance_id=<bigtable instance id>
 --bt-omit
 ```
 
-(9) Test data is being inserted to cassandra by using the following sql from cqlsh:
+The simulation will create the ```metric``` keyspace in Cassandra if it does not exists already
+and create the ```metrics``` table on that keyspace if it does not exists already.
 
- ```select count(*) from \<keyspace\>.metrics;```  
+(8) Test data is being inserted to cassandra by using the following sql from cqlsh:
+
+ ```select count(*) from metric.metrics;```  
  
-(10) Test data is being inserted to Bigtable by using the following cbt command
+(9) Test data is being inserted to Bigtable by using the following cbt command
 
  ```cbt count metrics```
+ 
+
+**_cqlsh can be used to run queries on Cassandra
+   The tools is written in python and needs to be installed on client
+   however it support python 2.7 only_
     
     

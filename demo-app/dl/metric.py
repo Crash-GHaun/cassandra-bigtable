@@ -8,9 +8,28 @@ import random
 
 TABLE_NAME = 'metrics'
 COLUMN_FAMILY = 'metric'
-CQL = """
-INSERT INTO {} (server_ip, sample_time, cpu_usage, cpu_load, mem_usage, processes)
-VALUES (%(server_ip)s, %(sample_time)s, %(cpu_usage)s, %(cpu_load)s, %(mem_usage)s, %(processes)s)
+KEYSPACE = 'metric'
+
+
+CQL_CREATE_KEYSPACE = \
+    "CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE + \
+    " WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '2' }"
+
+CQL_CREATE_TABLE = """
+    CREATE TABLE IF NOT EXISTS {}.{} (
+        server_ip text,
+        sample_time timestamp,
+        cpu_usage float,
+        cpu_load float,
+        mem_usage int,
+        processes int,
+    PRIMARY KEY ((server_ip), sample_time) )
+    WITH CLUSTERING ORDER BY (sample_time DESC);
+""".format(KEYSPACE, TABLE_NAME)
+
+CQL_INSERT_ROW = """
+    INSERT INTO {} (server_ip, sample_time, cpu_usage, cpu_load, mem_usage, processes)
+    VALUES (%(server_ip)s, %(sample_time)s, %(cpu_usage)s, %(cpu_load)s, %(mem_usage)s, %(processes)s)
 """.format(TABLE_NAME)
 
 
@@ -25,13 +44,25 @@ class Metric:
 
 
 class CassandraMetric:
-    def __init__(self, host, db):
+    def __init__(self, host):
         cluster = Cluster([host])
-        self.session = cluster.connect(db)
+
+        self.session = cluster.connect()
+        self.setup()
+
+    def setup(self):
+        print("Creating keyspace if not exists already...")
+        self.session.execute(CQL_CREATE_KEYSPACE)
+
+        print("Setting keyspace...")
+        self.session.set_keyspace(KEYSPACE)
+
+        print("Creating metrics table if not exists...")
+        self.session.execute(CQL_CREATE_TABLE)
 
     def insert_row(self, metric):
         try:
-            self.session.execute(CQL, metric.__dict__)
+            self.session.execute(CQL_INSERT_ROW, metric.__dict__)
         except Exception:
             print('Exception occurred while inserting row into Cassandra')
             raise

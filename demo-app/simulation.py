@@ -33,10 +33,6 @@ if __name__ == "__main__":
         help='Cassandra endpoint',
         required=True)
     parser.add_argument(
-        '--cassandra_db',
-        help='Cassandra keyspace',
-        required=True)
-    parser.add_argument(
         '--bt_project_id',
         help='Bigtable project id',
         required=True)
@@ -53,7 +49,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Cassandra connection
-    cass_session = metric_dl.CassandraMetric(args.cassandra_host, args.cassandra_db)
+    cass_session = metric_dl.CassandraMetric(args.cassandra_host)
 
     # Bigtable connection
     bt_session = None
