@@ -40,10 +40,10 @@ This code was tested using a [Bitnami solution available on Google marketplace](
 
 (6) Run the simulation using the followinG command. If you want to stream data to bigtable remove ```--skip_bt_insert```
 ``` 
-python simulation.py --servers=<number of servers to simulate>
---cassandra_host=<host ip> 
---bt_project_id=<google project id>
---bt_instance_id=<bigtable instance id>
+python simulation.py --servers=<number of servers to simulate> \
+--cassandra_host=<host ip> \
+--bt_project_id=<google project id> \
+--bt_instance_id=<bigtable instance id> \
 --skip_bt_insert
 ```
 
