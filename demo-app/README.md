@@ -14,7 +14,7 @@ This code was tested using a [Bitnami solution available on Google marketplace](
 (3) This code uses the simplest Cassandra remote authorization scheme 
  so make sure the following configuration properties are set in your cassandra.yaml  
  ```
- authorizer: AllowAllAuthorize
+ authorizer: AllowAllAuthorizer
  authenticator: AllowAllAuthenticator
  start_rpc: true
  rpc_address: 0.0.0.0
