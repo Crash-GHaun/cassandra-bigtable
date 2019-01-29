@@ -1,6 +1,6 @@
-#Bulk Load Tool
+# Bulk Load Tool
 
- ## General
+## General
 [Goolge Bigtable](https://cloud.google.com/bigtable/) is a compressed, high performance, data storage system built on [Google File System](https://en.wikipedia.org/wiki/Google_File_System), [Chubby Lock Service](https://ai.google/research/pubs/pub27897), SSTable (log-structured storage like [LevelDB](https://en.wikipedia.org/wiki/LevelDB)) and a few other Google technologies.
 
 Bulk-load aim to provide an easy way to transfer records from [Cassandra](http://cassandra.apache.org/) into Google's BigTable.
@@ -51,7 +51,8 @@ make run PROJECT_ID=my-playground TEMP_BUCKET=cassandra2bigtable-bucket NUM_OF_W
 The process your won table, you'll need to create a new POJO and add it to the pipeline.
 
 ### Adding a new POJO
-CassandraIO provides a source to read and returns a bounded collection of entities as PCollection<Entity>. An entity is built by Cassandra mapper (com.datastax.driver.mapping.EntityMapper) based on a POJO containing annotations (as described http://docs.datastax.com/en/developer/java-driver/2.1/manual/object_mapper/creating/").  
+> CassandraIO provides a source to read and returns a bounded collection of entities as PCollection<Entity>. An entity is built by Cassandra mapper (com.datastax.driver.mapping.EntityMapper) based on a POJO containing annotations (as described http://docs.datastax.com/en/developer/java-driver/2.1/manual/object_mapper/creating/").  
+
 In this project I have defined BaseRow as a base class. This class is suppose to give the basic transformations utilities.  
 To create your own POJO, you will need to mimic Metric.java. This includes:  
 * Extend BaseRow.java
