@@ -1,7 +1,7 @@
-PROJECT_ID = yoram-playground
-TEMP_BUCKET = cassandra2bigtable
+PROJECT_ID = moti-david-playground
+TEMP_BUCKET = cassandra2bigtable-df
 NUM_OF_WORKERS = 2
-BIGTABLE_PROJECT_ID = yoram-playground
+BIGTABLE_PROJECT_ID = moti-david-playground
 BIGTABLE_INSTANCE_ID = case-ks
 BIGTABLE_TABLE_ID = metrics
 CASSANDRA_HOSTS_LIST = "35.224.119.160"
