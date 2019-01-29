@@ -1,6 +1,5 @@
 # Bulk Load Tool
 
-## General
 [Goolge Bigtable](https://cloud.google.com/bigtable/) is a compressed, high performance, data storage system built on [Google File System](https://en.wikipedia.org/wiki/Google_File_System), [Chubby Lock Service](https://ai.google/research/pubs/pub27897), SSTable (log-structured storage like [LevelDB](https://en.wikipedia.org/wiki/LevelDB)) and a few other Google technologies.
 
 Bulk-load aim to provide an easy way to transfer records from [Cassandra](http://cassandra.apache.org/) into Google's BigTable.
