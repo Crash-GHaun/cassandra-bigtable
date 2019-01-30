@@ -54,11 +54,13 @@ public class Metric extends BaseRow {
 
 
 	public KV<ByteString, Iterable<Mutation>> createBigTableRow(){
-		ByteString key = ByteString.copyFromUtf8(this.getServer_ip());
+		ByteString key = ByteString.copyFromUtf8(this.getServer_ip()+"#"+this.getSample_time().toString());
 		// BulkMutation doesn't split rows. Currently, if a single row contains more than 100,000
 		// mutations, the service will fail the request.
 		ImmutableList.Builder<Mutation> mutations = ImmutableList.builder();
 
+
+		mutations.add(getMutation(FAMILY,"server_ip", this.getServer_ip()));
 		mutations.add(getMutation(FAMILY,"sample_time", this.getSample_time().toString()));
 		mutations.add(getMutation(FAMILY,"cpu_usage", this.getCpu_usage().toString()));
 		mutations.add(getMutation(FAMILY,"cpu_load", this.getCpu_load().toString()));
