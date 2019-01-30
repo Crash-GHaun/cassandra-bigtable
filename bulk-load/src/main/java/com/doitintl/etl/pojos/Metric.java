@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.beam.sdk.values.KV;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**CREATE TABLE case_ks.metrics (
@@ -54,7 +55,10 @@ public class Metric extends BaseRow {
 
 
 	public KV<ByteString, Iterable<Mutation>> createBigTableRow(){
-		ByteString key = ByteString.copyFromUtf8(this.getServer_ip()+"#"+this.getSample_time().toString());
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+		String date = formatter.format(this.getSample_time());
+
+		ByteString key = ByteString.copyFromUtf8(this.getServer_ip()+"#"+date);
 		// BulkMutation doesn't split rows. Currently, if a single row contains more than 100,000
 		// mutations, the service will fail the request.
 		ImmutableList.Builder<Mutation> mutations = ImmutableList.builder();
