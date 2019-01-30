@@ -7,6 +7,7 @@ import lombok.Data;
 import org.apache.beam.sdk.values.KV;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 public abstract class BaseRow implements Serializable {
@@ -18,6 +19,12 @@ public abstract class BaseRow implements Serializable {
 	 * @return KV element that represent a key and it's mutations
 	 */
 	abstract public KV<ByteString, Iterable<Mutation>> createBigTableRow();
+
+	/**
+	 * Each class should define it's own cell's timestamp
+	 * @return
+	 */
+	abstract public Date cellTimeStamp();
 
 	/**
 	 * Generate a BigTable row mutation
@@ -44,6 +51,7 @@ public abstract class BaseRow implements Serializable {
 		return SetCell.newBuilder()
 				.setFamilyName(family)
 				.setColumnQualifier(ByteString.copyFromUtf8(columnQualifier))
+				.setTimestampMicros(this.cellTimeStamp().getTime()*1000)
 				.setValue(ByteString.copyFromUtf8(value))
 				.build();
 	}

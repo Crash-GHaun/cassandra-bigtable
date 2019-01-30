@@ -53,6 +53,9 @@ public class Metric extends BaseRow {
 	@Column(name = "processes")
 	Integer processes;
 
+	public Date cellTimeStamp(){
+		return this.sample_time;
+	}
 
 	public KV<ByteString, Iterable<Mutation>> createBigTableRow(){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
