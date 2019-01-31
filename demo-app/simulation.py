@@ -4,6 +4,7 @@ import argparse
 import random
 import threading
 import time
+import sys
 
 
 def emit_metrics(server, cass_session, bt_session, skip_bt_insert):
@@ -33,13 +34,18 @@ if __name__ == "__main__":
         help='Cassandra endpoint',
         required=True)
     parser.add_argument(
+        '--cassandra_ks',
+        help='Cassandra keyspace',
+        required=False,
+        default='metric')
+    parser.add_argument(
         '--bt_project_id',
         help='Bigtable project id',
-        required=True)
+        required=False)
     parser.add_argument(
         '--bt_instance_id',
         help='Bigtable instance id',
-        required=True)
+        required=False)
     parser.add_argument(
         '--skip_bt_insert',
         help='Skip inserting data to bigtable',
@@ -48,8 +54,19 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if not args.skip_bt_insert:
+        if not args.bt_project_id:
+            print('Missing bigtable project id argument')
+            sys.exit(1)
+        if not args.bt_instance_id:
+            print('Missing bigtable instance id argument')
+            sys.exit(1)
+    else:
+        if args.bt_project_id or args.bt_instance_id:
+            print('Bigtable arguments ignored...')
+
     # Cassandra connection
-    cass_session = metric_dl.CassandraMetric(args.cassandra_host)
+    cass_session = metric_dl.CassandraMetric(args.cassandra_host, args.cassandra_ks)
 
     # Bigtable connection
     bt_session = None

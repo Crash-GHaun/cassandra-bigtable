@@ -9,12 +9,10 @@ import random
 
 TABLE_NAME = 'metrics'
 COLUMN_FAMILY = 'metric'
-KEYSPACE = 'metric'
 
 
-CQL_CREATE_KEYSPACE = \
-    "CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE + \
-    " WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '2' }"
+CQL_CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS {} "
+CQL_REPLICATION_CLAUSE = " WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '2' }"
 
 CQL_CREATE_TABLE = """
     CREATE TABLE IF NOT EXISTS {}.{} (
@@ -26,7 +24,7 @@ CQL_CREATE_TABLE = """
         processes int,
     PRIMARY KEY ((server_ip), sample_time) )
     WITH CLUSTERING ORDER BY (sample_time DESC);
-""".format(KEYSPACE, TABLE_NAME)
+"""
 
 CQL_INSERT_ROW = """
     INSERT INTO {} (server_ip, sample_time, cpu_usage, cpu_load, mem_usage, processes)
@@ -45,22 +43,22 @@ class Metric:
 
 
 class CassandraMetric:
-    def __init__(self, host):
+    def __init__(self, host, keyspace):
         cluster = Cluster([host])
 
         self.session = cluster.connect()
-        self.setup()
+        self.setup(keyspace)
 
-    def setup(self):
+    def setup(self, keyspace):
         try:
             print("Creating Cassandra keyspace if not exists already...")
-            self.session.execute(CQL_CREATE_KEYSPACE)
+            self.session.execute(CQL_CREATE_KEYSPACE.format(keyspace) + CQL_REPLICATION_CLAUSE)
 
             print("Setting Cassandra keyspace...")
-            self.session.set_keyspace(KEYSPACE)
+            self.session.set_keyspace(keyspace)
 
             print("Creating Cassandra metrics table if not exists...")
-            self.session.execute(CQL_CREATE_TABLE)
+            self.session.execute(CQL_CREATE_TABLE.format(keyspace, TABLE_NAME))
         except Exception:
             print('Error in setting up Cassandra environment')
             raise
@@ -143,4 +141,13 @@ class BigtableMetric:
             count += 1
         return count
 
+    def get_server_metrics(self):
+        partial_rows = self.bt_table.read_rows()
+        i = 0
+        for row in partial_rows:
+            i += 1
+            if i == 100:
+                break
+            print(row.row_key)
+            print({k: v[0].value for k, v in row.to_dict().items()})
 

@@ -38,10 +38,14 @@ This code was tested using a [Bitnami solution available on Google marketplace](
   The code uses the default authentication to connect to Bigtable.  
   see https://googleapis.github.io/google-cloud-python/latest/core/auth.html  
 
-(6) Run the simulation using the followinG command. If you want to stream data to bigtable remove ```--skip_bt_insert```
+(6) Run the simulation using the following command.  
+If you want to use a different keyspace than the default 'metric' 
+please provide the argument ```--cassandra_ks```  
+If you want to stream data to bigtable remove ```--skip_bt_insert```  
 ``` 
 python simulation.py --servers=<number of servers to simulate> \
 --cassandra_host=<host ip> \
+--cassandra_ks=<keyspace> \
 --bt_project_id=<google project id> \
 --bt_instance_id=<bigtable instance id> \
 --skip_bt_insert

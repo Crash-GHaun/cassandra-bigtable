@@ -1,7 +1,7 @@
-CREATE KEYSPACE case_ks
+CREATE KEYSPACE metric
 WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor' : 3};
 
-DROP TABLE IF EXISTS case_ks.metrics;
+DROP TABLE IF EXISTS metric.metrics;
 
 CREATE TABLE case_ks.metrics (
     server_ip text,
@@ -14,4 +14,4 @@ PRIMARY KEY ((server_ip), sample_time) )
 WITH CLUSTERING ORDER BY (sample_time DESC);
 
 
---CREATE INDEX met_by_ts ON case_ks.metrics (sample_time);
+--CREATE INDEX met_by_ts ON metric.metrics (sample_time);
