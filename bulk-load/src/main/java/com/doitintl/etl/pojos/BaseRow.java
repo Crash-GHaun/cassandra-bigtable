@@ -33,10 +33,13 @@ public abstract class BaseRow implements Serializable {
 	 * @param value Cell's value
 	 * @return A BigTable row mutation
 	 */
-	Mutation getMutation(String family, String columnQualifier, String value){
+	Mutation getMutation(String family, String columnQualifier, Object value){
+		if(value == null | value.toString() == null){
+			value = "null";
+		}
 		return Mutation
 				.newBuilder()
-				.setSetCell(getCell(family,columnQualifier, value))
+				.setSetCell(getCell(family,columnQualifier, value.toString()))
 				.build();
 	}
 
