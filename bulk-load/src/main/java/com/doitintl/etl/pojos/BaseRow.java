@@ -34,7 +34,7 @@ public abstract class BaseRow implements Serializable {
 	 * @return A BigTable row mutation
 	 */
 	Mutation getMutation(String family, String columnQualifier, Object value){
-		if(value == null | value.toString() == null){
+		if(value == null || value.toString() == null){
 			value = "null";
 		}
 		return Mutation
